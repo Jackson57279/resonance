@@ -2,12 +2,21 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
+  devIndicators: false,
   devIndicators: false,
   experimental: {
     proxyClientMaxBodySize: "20mb",
   },
-};
+  },
+  async headers() {
+    return [
+      {
+        source: "/api/health",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+    ];
+  },
 
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
