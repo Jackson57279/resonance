@@ -49,8 +49,8 @@ export function VoiceCreateDialog({
           <DrawerHeader>
             <DrawerTitle>Create custom voice</DrawerTitle>
             <DrawerDescription>
-              Upload or record an audio sample to add a new voice to your
-              library.
+              Upload up to 3 audio or video clips, or record a sample, to add a
+              new voice to your library.
             </DrawerDescription>
           </DrawerHeader>
           <VoiceCreateForm
@@ -77,7 +77,8 @@ export function VoiceCreateDialog({
         <DialogHeader className="text-left">
           <DialogTitle>Create custom voice</DialogTitle>
           <DialogDescription>
-            Upload or record an audio sample to add a new voice to your library.
+            Upload up to 3 audio or video clips, or record a sample, to add a
+            new voice to your library.
           </DialogDescription>
         </DialogHeader>
         <VoiceCreateForm onError={handleError} />

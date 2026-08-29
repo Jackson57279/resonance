@@ -13,23 +13,27 @@ import { Button } from "@/components/ui/button";
 import { useAudioPlayback } from "@/hooks/use-audio-playback";
 import { useAudioRecorder } from "@/features/voices/hooks/use-audio-recorder";
 
+const MAX_TRAINING_SAMPLES = 3;
+
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-};
+}
 
 export function VoiceRecorder({
-  file,
-  onFileChange,
+  files,
+  onFilesChange,
   isInvalid,
 }: {
-  file: File | null;
-  onFileChange: (file: File | null) => void;
+  files: File[];
+  onFilesChange: (files: File[]) => void;
   isInvalid?: boolean;
 }) {
-  const { isPlaying, togglePlay } = useAudioPlayback(file);
+  const lastFile = files[files.length - 1] ?? null;
+  const { isPlaying, togglePlay } = useAudioPlayback(lastFile);
+  const canAddMore = files.length < MAX_TRAINING_SAMPLES;
 
   const {
     isRecording,
@@ -44,15 +48,19 @@ export function VoiceRecorder({
 
   const handleStop = () => {
     stopRecording((blob) => {
-      const recordedFile = new File([blob], "recording.wav", {
-        type: "audio/wav",
-      });
-      onFileChange(recordedFile);
+      const recordedFile = new File(
+        [blob],
+        `recording-${files.length + 1}.wav`,
+        {
+          type: "audio/wav",
+        },
+      );
+      onFilesChange([...files, recordedFile].slice(0, MAX_TRAINING_SAMPLES));
     });
   };
 
   const handleReRecord = () => {
-    onFileChange(null);
+    onFilesChange([]);
     resetRecording();
   };
 
@@ -72,54 +80,77 @@ export function VoiceRecorder({
     );
   }
 
-  if (file) {
+  if (files.length > 0 && !isRecording) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border p-4">
+      <div className="flex flex-col gap-3">
+        {files.map((file, index) => (
+          <div
+            key={`${file.name}-${file.size}-${index}`}
+            className="flex items-center gap-3 rounded-xl border p-4"
+          >
+            <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+              <FileAudio className="size-5 text-muted-foreground" />
+            </div>
 
-        <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
-          <FileAudio className="size-5 text-muted-foreground" />
-        </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{file.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {formatFileSize(file.size)}
+                {index === files.length - 1 && audioBlob && elapsedTime > 0 && (
+                  <>&nbsp;&middot;&nbsp;{formatTime(elapsedTime)}</>
+                )}
+              </p>
+            </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{file.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {formatFileSize(file.size)}
-            {audioBlob && elapsedTime > 0 && (
-              <>&nbsp;&middot;&nbsp;{formatTime(elapsedTime)}</>
+            {index === files.length - 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={togglePlay}
+                title={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? (
+                  <Pause className="size-4" />
+                ) : (
+                  <Play className="size-4" />
+                )}
+              </Button>
             )}
-          </p>
-        </div>
-
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() =>
+                onFilesChange(files.filter((_, i) => i !== index))
+              }
+              title="Remove"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        ))}
+        {canAddMore && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={startRecording}
+          >
+            <Mic className="size-3.5" />
+            Record another ({files.length}/{MAX_TRAINING_SAMPLES})
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
-          onClick={togglePlay}
-          title={isPlaying ? "Pause" : "Play"}
-        >
-          {isPlaying ? (
-            <Pause className="size-4" />
-          ) : (
-            <Play className="size-4" />
-          )}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
+          size="sm"
+          className="self-start"
           onClick={handleReRecord}
-          title="Re-record"
         >
-          <RotateCcw className="size-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={handleReRecord}
-          title="Remove"
-        >
-          <X className="size-4" />
+          <RotateCcw className="size-3.5" />
+          Clear recordings
         </Button>
       </div>
     );
@@ -162,7 +193,7 @@ export function VoiceRecorder({
           Record your voice
         </p>
         <p className="text-center text-sm text-muted-foreground">
-          Click record to start capturing audio
+          Record up to {MAX_TRAINING_SAMPLES} clips for training
         </p>
       </div>
       <Button
@@ -176,4 +207,4 @@ export function VoiceRecorder({
       </Button>
     </div>
   );
-};
+}

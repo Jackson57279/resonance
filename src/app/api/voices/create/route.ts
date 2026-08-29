@@ -13,7 +13,7 @@ const createVoiceSchema = z.object({
   description: z.string().nullish(),
 });
 
-const MAX_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+const MAX_UPLOAD_SIZE_BYTES = 80 * 1024 * 1024;
 const MIN_AUDIO_DURATION_SECONDS = 10;
 
 export async function POST(request: Request) {
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
   if (fileBuffer.byteLength > MAX_UPLOAD_SIZE_BYTES) {
     return Response.json(
-      { error: "Audio file exceeds the 20 MB size limit" },
+      { error: "Training audio exceeds the 80 MB size limit" },
       { status: 413 },
     );
   }

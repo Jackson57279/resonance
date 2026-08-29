@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: false,
   experimental: {
-    proxyClientMaxBodySize: "20mb",
+    proxyClientMaxBodySize: "80mb",
   },
   async headers() {
     return [

@@ -11,6 +11,7 @@ import {
   FolderOpen,
   X,
   FileAudio,
+  FileVideo,
   Upload,
   Mic,
   Tag,
@@ -62,7 +63,11 @@ import {
   VOICE_CATEGORIES,
   VOICE_CATEGORY_LABELS,
 } from "@/features/voices/data/voice-categories";
+import { mediaFilesToWav } from "@/features/voices/lib/media-to-wav";
 import { VoiceRecorder } from "./voice-recorder";
+
+const MAX_TRAINING_SAMPLES = 3;
+const MAX_SAMPLE_SIZE_BYTES = 50 * 1024 * 1024;
 
 const LANGUAGE_OPTIONS = locales.all
   .filter((l) => l.tag && l.tag.includes("-") && l.name)
@@ -73,112 +78,129 @@ const LANGUAGE_OPTIONS = locales.all
 
 const voiceCreateFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  file: z
-    .instanceof(File, { message: "An audio file is required" })
-    .nullable()
-    .refine((f) => f !== null, "An audio file is required"),
+  files: z
+    .array(z.instanceof(File))
+    .min(1, "Upload at least 1 audio or video file")
+    .max(MAX_TRAINING_SAMPLES, `You can upload up to ${MAX_TRAINING_SAMPLES} files`),
   category: z.string().min(1, "A category is required"),
   language: z.string().min(1, "A language is required"),
   description: z.string(),
 });
 
-function FileDropzone({
+function TrainingSampleRow({
   file,
-  onFileChange,
-  isInvalid,
+  onRemove,
 }: {
-  file: File | null;
-  onFileChange: (file: File | null) => void;
-  isInvalid?: boolean;
+  file: File;
+  onRemove: () => void;
 }) {
   const { isPlaying, togglePlay } = useAudioPlayback(file);
-
-  const {
-    getRootProps, getInputProps, isDragActive, isDragReject
-  } = useDropzone({
-    accept: { "audio/*": [] },
-    maxSize: 20 * 1024 * 1024,
-    multiple: false,
-    onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length > 0) {
-        onFileChange(acceptedFiles[0]);
-      }
-    },
-  });
-
-  if (file) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl border p-4">
-
-        <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
-          <FileAudio className="size-5 text-muted-foreground" />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{file.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {formatFileSize(file.size)}
-          </p>
-        </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={togglePlay}
-        >
-          {isPlaying ? (
-            <Pause className="size-4" />
-          ) : (
-            <Play className="size-4" />
-          )}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => onFileChange(null)}
-        >
-          <X className="size-4" />
-        </Button>
-      </div>
-    );
-  }
+  const isVideo = file.type.startsWith("video/");
 
   return (
-    <div
-      {...getRootProps()}
-      className={cn(
-        "flex cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border px-6 py-10 transition-colors",
-        isDragReject || isInvalid
-          ? "border-destructive"
-          : isDragActive
-            ? "border-primary"
-            : "",
-      )}
-    >
-      <input {...getInputProps()} />
-      <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
-        <AudioLines className="size-5 text-muted-foreground" />
+    <div className="flex items-center gap-3 rounded-xl border p-4">
+      <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+        {isVideo ? (
+          <FileVideo className="size-5 text-muted-foreground" />
+        ) : (
+          <FileAudio className="size-5 text-muted-foreground" />
+        )}
       </div>
 
-      <div className="flex flex-col items-center gap-1.5">
-        <p className="text-base font-semibold tracking-tight">
-          Upload your audio file
-        </p>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Supports all audio formats, max size 20MB
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{file.name}</p>
+        <p className="text-xs text-muted-foreground">
+          {isVideo ? "Video" : "Audio"} · {formatFileSize(file.size)}
         </p>
       </div>
 
-       <Button type="button" variant="outline" size="sm">
-          <FolderOpen className="size-3.5" />
-          Upload file
-        </Button>
+      <Button type="button" variant="ghost" size="icon-sm" onClick={togglePlay}>
+        {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
+      </Button>
+      <Button type="button" variant="ghost" size="icon-sm" onClick={onRemove}>
+        <X className="size-4" />
+      </Button>
     </div>
-  )
-};
+  );
+}
+
+function FileDropzone({
+  files,
+  onFilesChange,
+  isInvalid,
+}: {
+  files: File[];
+  onFilesChange: (files: File[]) => void;
+  isInvalid?: boolean;
+}) {
+  const remaining = MAX_TRAINING_SAMPLES - files.length;
+
+  const { getRootProps, getInputProps, isDragActive, isDragReject } =
+    useDropzone({
+      accept: {
+        "audio/*": [],
+        "video/*": [".mp4", ".webm", ".mov", ".mkv", ".m4v"],
+      },
+      maxSize: MAX_SAMPLE_SIZE_BYTES,
+      multiple: true,
+      maxFiles: remaining,
+      disabled: remaining <= 0,
+      onDrop: (acceptedFiles) => {
+        if (acceptedFiles.length === 0) return;
+        onFilesChange(
+          [...files, ...acceptedFiles].slice(0, MAX_TRAINING_SAMPLES),
+        );
+      },
+    });
+
+  return (
+    <div className="flex flex-col gap-3">
+      {files.map((file, index) => (
+        <TrainingSampleRow
+          key={`${file.name}-${file.size}-${index}`}
+          file={file}
+          onRemove={() =>
+            onFilesChange(files.filter((_, i) => i !== index))
+          }
+        />
+      ))}
+
+      {remaining > 0 && (
+        <div
+          {...getRootProps()}
+          className={cn(
+            "flex cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border px-6 py-10 transition-colors",
+            isDragReject || isInvalid
+              ? "border-destructive"
+              : isDragActive
+                ? "border-primary"
+                : "",
+          )}
+        >
+          <input {...getInputProps()} />
+          <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
+            <AudioLines className="size-5 text-muted-foreground" />
+          </div>
+
+          <div className="flex flex-col items-center gap-1.5">
+            <p className="text-base font-semibold tracking-tight">
+              Upload training clips
+            </p>
+            <p className="text-center text-sm text-muted-foreground">
+              Audio or video, up to {MAX_TRAINING_SAMPLES} files (50MB each).{" "}
+              {files.length}/{MAX_TRAINING_SAMPLES} added
+            </p>
+          </div>
+
+          <Button type="button" variant="outline" size="sm">
+            <FolderOpen className="size-3.5" />
+            Upload files
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function LanguageCombobox({
   value,
@@ -264,17 +286,18 @@ export function VoiceCreateForm({
   const createMutation = useMutation({
     mutationFn: async ({
       name,
-      file,
+      files,
       category,
       language,
       description,
     }: {
       name: string;
-      file: File;
+      files: File[];
       category: string;
       language: string;
       description?: string;
     }) => {
+      const trainingFile = await mediaFilesToWav(files);
       const params = new URLSearchParams({
         name,
         category,
@@ -287,8 +310,8 @@ export function VoiceCreateForm({
       const response = 
         await fetch(`/api/voices/create?${params.toString()}`, {
           method: "POST",
-          headers: { "Content-Type": file.type },
-          body: file,
+          headers: { "Content-Type": trainingFile.type },
+          body: trainingFile,
         });
 
       if (!response.ok) {
@@ -303,7 +326,7 @@ export function VoiceCreateForm({
   const form = useForm({
     defaultValues: {
       name: "",
-      file: null as File | null,
+      files: [] as File[],
       category: "GENERAL" as string,
       language: "en-US",
       description: "",
@@ -315,7 +338,7 @@ export function VoiceCreateForm({
       try {
          await createMutation.mutateAsync({
           name: value.name,
-          file: value.file!,
+          files: value.files,
           category: value.category,
           language: value.language,
           description: value.description || undefined,
@@ -357,7 +380,7 @@ export function VoiceCreateForm({
             : "flex flex-col gap-6",
         )}
       >
-        <form.Field name="file">
+        <form.Field name="files">
           {(field) => {
             const isInvalid =
               field.state.meta.isTouched && !field.state.meta.isValid;
@@ -377,15 +400,15 @@ export function VoiceCreateForm({
                   </TabsList>
                   <TabsContent value="upload">
                     <FileDropzone
-                      file={field.state.value}
-                      onFileChange={field.handleChange}
+                      files={field.state.value}
+                      onFilesChange={field.handleChange}
                       isInvalid={isInvalid}
                     />
                   </TabsContent>
                   <TabsContent value="record">
                     <VoiceRecorder
-                      file={field.state.value}
-                      onFileChange={field.handleChange}
+                      files={field.state.value}
+                      onFilesChange={field.handleChange}
                       isInvalid={isInvalid}
                     />
                   </TabsContent>
