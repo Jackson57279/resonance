@@ -4,10 +4,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: false,
-  devIndicators: false,
   experimental: {
     proxyClientMaxBodySize: "20mb",
-  },
   },
   async headers() {
     return [
@@ -17,6 +15,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+};
 
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
