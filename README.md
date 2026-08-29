@@ -1,130 +1,195 @@
-# Resonance
+<div align="center">
 
-AI-powered text-to-speech and voice cloning platform built with Next.js, React, and Prisma.
+<img src="https://33uee5uclf.ufs.sh/f/fa600f97-6cf2-4759-8641-3093d13591bf-6rrk6b.png" alt="Resonance" width="720" />
 
-## Tech Stack
+<br />
+<br />
 
-- **Framework**: Next.js 16 + React 19
-- **Database**: PostgreSQL with Prisma ORM
-- **Auth**: Clerk
-- **API**: tRPC for type-safe API routes
-- **State Management**: TanStack Query
-- **Error Tracking**: Sentry
-- **Payments**: Polar.sh
-- **Storage**: Cloudflare R2 for audio files
-- **TTS Inference**: Chatterbox TTS running on Modal.com
+<h1>Resonance</h1>
+
+<p>The open-source ElevenLabs alternative.</p>
+
+<p>AI-powered text-to-speech and voice cloning built with Next.js 16, React 19, and Chatterbox TTS.</p>
+
+<br />
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/SioRb1?referralCode=ANTONIO&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
+<br />
+
+<p>
+  <a href="https://cwa.run/clerk"><img src="https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white" alt="Clerk" /></a>&nbsp;
+  <a href="https://cwa.run/railway"><img src="https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white" alt="Railway" /></a>&nbsp;
+  <a href="https://cwa.run/sentry"><img src="https://img.shields.io/badge/Sentry-362D59?style=for-the-badge&logo=sentry&logoColor=white" alt="Sentry" /></a>&nbsp;
+  <a href="https://cwa.run/coderabbit"><img src="https://img.shields.io/badge/CodeRabbit-FF6C37?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="CodeRabbit" /></a>&nbsp;
+  <a href="https://cwa.run/prisma"><img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" /></a>
+</p>
+
+</div>
+
+<br />
+
+## Tutorial
+
+[![Watch on YouTube](https://img.shields.io/badge/Watch_the_Full_Course-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://cwa.run/resonance-gh-yt)
+
+Learn how to build this entire project from scratch in a **free 12-hour video course** on YouTube. The tutorial covers every feature  - authentication, text-to-speech, voice cloning, deployment, and more.
+
+Each chapter has a matching branch so you can check out the code at any point in the tutorial:
+
+| Branch | Chapter |
+|--------|---------|
+| `main` | Final project (all chapters combined) |
+| `02-dashboard` | Dashboard layout and navigation |
+| `03-text-to-speech-ui` | Text-to-speech UI |
+| `04-backend-infrastructure` | Backend infrastructure (tRPC, R2, Prisma) |
+| `05-voice-selection` | Voice selection and library |
+| `06-tts-generation-audio-player` | TTS generation and audio player |
+| `07-tts-history-polish` | TTS history and polish |
+| `bonus-sentry-error-monitoring` | Bonus: Sentry error monitoring |
+| `08-voice-management` | Voice management and cloning |
+| `09-billing` | Billing and usage metering |
+
+```bash
+git checkout 04-backend-infrastructure  # example: jump to Chapter 4
+```
+
+## Features
+
+- **Text-to-Speech**  - Generate speech from text with adjustable creativity, variety, expression, and flow parameters
+- **Zero-Shot Voice Cloning**  - Upload or record a voice sample (10s minimum) and clone it instantly  - no fine-tuning required
+- **20 Built-in Voices**  - Pre-seeded system voices across 12 categories and 5 locales
+- **Waveform Audio Player**  - WaveSurfer.js visualization with seek, play/pause, and download
+- **Multi-Tenant**  - Team-based access via Clerk Organizations with full data isolation
+- **Generation History**  - Browse and replay past generations with preserved voice metadata
+- **Fully Responsive**  - Mobile-first with bottom drawers, compact controls, and adaptive layouts
 
 ## Getting Started
 
-First, run the development server:
-
-```bash
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Deploy on Railway
-
-This project is configured for deployment on [Railway](https://railway.com).
-
 ### Prerequisites
 
-- A Railway account
-- This repository pushed to GitHub
+- Node.js **20.9** or later
+- [Prisma Postgres](https://cwa.run/prisma) database
+- [Clerk](https://cwa.run/clerk) account (with Organizations enabled)
+- [Cloudflare R2](https://cwa.run/cloudflare-r2) bucket
+- [Modal](https://cwa.run/modal) account (for GPU-hosted TTS)
 
-### Step 1: Create a Railway Project
+### 1. Clone and install
 
-1. Log in to [Railway Dashboard](https://railway.com/dashboard)
-2. Click **"New Project"**
-3. Select **"Deploy from GitHub repo"**
-4. Choose this repository
-
-### Step 2: Add PostgreSQL Database
-
-1. In your Railway project, click **"New"** → **"Database"** → **"PostgreSQL"**
-2. Railway will automatically inject the `DATABASE_URL` environment variable into your app service
-
-### Step 3: Configure Environment Variables
-
-Add the following environment variables in your Railway service settings:
-
-```env
-# Required
-DATABASE_URL=${{ Postgres.DATABASE_URL }}  # Auto-injected when you add PostgreSQL
-NEXT_PUBLIC_APP_URL=https://your-app-url.railway.app
-
-# Authentication (Clerk)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-
-# Cloudflare R2 (audio storage)
-R2_ACCOUNT_ID=your-account-id
-R2_ACCESS_KEY_ID=your-access-key
-R2_SECRET_ACCESS_KEY=your-secret-key
-R2_BUCKET_NAME=resonance-app
-
-# Polar.sh (billing)
-POLAR_ACCESS_TOKEN=your-polar-token
-POLAR_SERVER=sandbox  # or "production"
-POLAR_PRODUCT_ID=your-product-id
-
-# Chatterbox TTS API (Modal.com)
-CHATTERBOX_API_URL=https://your-modal-app-url.modal.run
-CHATTERBOX_API_KEY=your-api-key
-
-# Sentry (optional)
-SENTRY_AUTH_TOKEN=your-sentry-token  # Only needed for source maps upload
+```bash
+git clone https://github.com/code-with-antonio/resonance.git
+cd resonance
+npm install
 ```
 
-### Step 4: Deploy
+### 2. Configure environment
 
-1. Railway will automatically detect the `railway.json` configuration
-2. The build process will:
-   - Run `prisma generate` to generate the Prisma client
-   - Run `next build` to build the Next.js app
-   - Run `prisma migrate deploy` before starting (handles database migrations)
-3. Once the build completes, your app will be deployed
+```bash
+cp .env.example .env
+```
 
-### Step 5: Set up Custom Domain (Optional)
+Fill in the blank values in `.env`. Sensible defaults (Clerk routes, `APP_URL`, etc.) are pre-filled.
 
-1. In Railway, go to your service settings
-2. Click **"Settings"** → **"Domains"**
-3. Add your custom domain and follow the DNS instructions
+### 3. Set up the database
 
-## Configuration Files
+```bash
+npx prisma migrate deploy
+```
 
-- **`railway.json`** - Railway deployment configuration (build commands, health checks, etc.)
-- **`next.config.ts`** - Next.js configuration with standalone output for Railway
-- **`prisma/schema.prisma`** - Database schema
+### 4. Deploy the TTS engine
 
-## Local Development
+The included `chatterbox_tts.py` is adapted from [Modal's official Chatterbox TTS example](https://cwa.run/modal-tts), modified to read voice reference audio directly from your R2 bucket instead of a Modal Volume.
 
-1. Copy the environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
+Before deploying, update `chatterbox_tts.py` with your R2 credentials:
 
-2. Install dependencies:
-   ```bash
-   bun install
-   ```
+```python
+R2_BUCKET_NAME = "<your-r2-bucket-name-here>"
+R2_ACCOUNT_ID = "<your-r2-account-id-here>"
+```
 
-3. Set up the database:
-   ```bash
-   bun prisma migrate dev
-   bun prisma generate
-   ```
+Then create the required secrets in your [Modal dashboard](https://cwa.run/modal-secrets):
 
-4. Run the development server:
-   ```bash
-   bun dev
-   ```
+| Secret Name | Keys | Description |
+|-------------|------|-------------|
+| `cloudflare-r2` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | R2 API credentials (used for bucket mount) |
+| `chatterbox-api-key` | `CHATTERBOX_API_KEY` | API key to protect the endpoint (use any strong random string) |
+| `hf-token` | `HF_TOKEN` | Hugging Face token (for downloading the Chatterbox model weights) |
 
-## Learn More
+Deploy to Modal:
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Railway Documentation](https://docs.railway.com)
-- [Prisma Documentation](https://www.prisma.io/docs)
+```bash
+modal deploy chatterbox_tts.py
+```
+
+This deploys Chatterbox TTS to a serverless NVIDIA A10G GPU on Modal. The container mounts your R2 bucket read-only for direct access to voice reference audio. Use the resulting Modal URL as `CHATTERBOX_API_URL` in your `.env.local`.
+
+> **Note:** The first request after a period of inactivity may take longer due to cold starts as Modal provisions the GPU container.
+
+Once deployed, generate the type-safe Chatterbox client from the OpenAPI spec:
+
+```bash
+npm run sync-api
+```
+
+### 5. Seed voices
+
+```bash
+npx prisma db seed
+```
+
+Seeds 20 built-in voices to the database and R2. The system voice WAV files are included in the repository and originate from [Modal's voice sample pack](https://modal-cdn.com/blog/audio/chatterbox-tts-voices.zip).
+
+### 6. Run
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Self-Hosting
+
+Resonance is designed to be self-hosted. You'll need:
+
+1. **A PostgreSQL database**  - [Prisma Postgres](https://cwa.run/prisma) (recommended), or any managed Postgres
+2. **Cloudflare R2**  - For audio storage (S3-compatible, generous free tier)
+3. **Modal**  - For serverless GPU inference (pay-per-second billing)
+4. **Clerk**  - For authentication and multi-tenancy
+
+Deploy the Next.js app to any Node.js host (Railway, Docker, etc.).
+
+## Project Structure
+
+```
+src/
+├── app/                        # Next.js App Router
+│   ├── (dashboard)/            # Protected routes (home, TTS, voices)
+│   ├── api/                    # Audio proxy routes + tRPC handler
+│   ├── sign-in/                # Clerk auth pages
+│   └── sign-up/
+├── components/                 # Shared UI components (shadcn/ui + custom)
+├── features/
+│   ├── dashboard/              # Home page, quick actions
+│   ├── text-to-speech/         # TTS form, audio player, settings, history
+│   └── voices/                 # Voice library, creation, recording
+├── hooks/                      # App-wide hooks
+├── lib/                        # Core: db, r2, env, chatterbox client
+├── trpc/                       # tRPC routers, client, server helpers
+├── generated/                  # Prisma client
+└── types/                      # Generated API types
+```
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Lint with ESLint |
+| `npm run sync-api` | Regenerate Chatterbox API types from OpenAPI spec |
+
+## Acknowledgements
+
+- [Chatterbox TTS](https://github.com/resemble-ai/chatterbox) by Resemble AI - the open-source zero-shot voice cloning model powering speech generation
+- [Modal](https://cwa.run/modal-tts) - serverless GPU deployment example and [voice sample pack](https://modal-cdn.com/blog/audio/chatterbox-tts-voices.zip)
