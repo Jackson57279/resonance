@@ -19,7 +19,6 @@
 
 <p>
   <a href="https://cwa.run/clerk"><img src="https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white" alt="Clerk" /></a>&nbsp;
-  <a href="https://cwa.run/polar"><img src="https://img.shields.io/badge/Polar-000000?style=for-the-badge&logo=polar&logoColor=white" alt="Polar" /></a>&nbsp;
   <a href="https://cwa.run/railway"><img src="https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white" alt="Railway" /></a>&nbsp;
   <a href="https://cwa.run/sentry"><img src="https://img.shields.io/badge/Sentry-362D59?style=for-the-badge&logo=sentry&logoColor=white" alt="Sentry" /></a>&nbsp;
   <a href="https://cwa.run/coderabbit"><img src="https://img.shields.io/badge/CodeRabbit-FF6C37?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="CodeRabbit" /></a>&nbsp;
@@ -34,7 +33,7 @@
 
 [![Watch on YouTube](https://img.shields.io/badge/Watch_the_Full_Course-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://cwa.run/resonance-gh-yt)
 
-Learn how to build this entire project from scratch in a **free 12-hour video course** on YouTube. The tutorial covers every feature  - authentication, text-to-speech, voice cloning, billing, deployment, and more.
+Learn how to build this entire project from scratch in a **free 12-hour video course** on YouTube. The tutorial covers every feature  - authentication, text-to-speech, voice cloning, deployment, and more.
 
 Each chapter has a matching branch so you can check out the code at any point in the tutorial:
 
@@ -62,7 +61,6 @@ git checkout 04-backend-infrastructure  # example: jump to Chapter 4
 - **20 Built-in Voices**  - Pre-seeded system voices across 12 categories and 5 locales
 - **Waveform Audio Player**  - WaveSurfer.js visualization with seek, play/pause, and download
 - **Multi-Tenant**  - Team-based access via Clerk Organizations with full data isolation
-- **Usage-Based Billing**  - Pay-as-you-go character metering with configurable pricing via Polar products and meters
 - **Generation History**  - Browse and replay past generations with preserved voice metadata
 - **Fully Responsive**  - Mobile-first with bottom drawers, compact controls, and adaptive layouts
 
@@ -75,7 +73,6 @@ git checkout 04-backend-infrastructure  # example: jump to Chapter 4
 - [Clerk](https://cwa.run/clerk) account (with Organizations enabled)
 - [Cloudflare R2](https://cwa.run/cloudflare-r2) bucket
 - [Modal](https://cwa.run/modal) account (for GPU-hosted TTS)
-- [Polar](https://cwa.run/polar) account (for billing)
 
 ### 1. Clone and install
 
@@ -91,43 +88,15 @@ npm install
 cp .env.example .env
 ```
 
-Fill in the blank values in `.env`. Sensible defaults (Clerk routes, Polar meter names, `APP_URL`, etc.) are pre-filled.
+Fill in the blank values in `.env`. Sensible defaults (Clerk routes, `APP_URL`, etc.) are pre-filled.
 
-### 3. Set up Polar billing
-
-In your [Polar](https://cwa.run/polar) dashboard, create two **meters** under **Meters**:
-
-1. **Voice Creation** meter
-   - Filter: Name equals `voice_creation`
-   - Aggregation: **Count**
-
-2. **Text-to-Speech Characters** meter
-   - Filter: Name equals `tts_generation`
-   - Aggregation: **Sum** over `characters`
-
-Then create a new **product** with **Recurring subscription** pricing. Under **Price Type**, add two metered prices:
-
-1. Click **Add metered price** and select the **Text-to-Speech Characters** meter
-   - Set the **Amount per unit** (price per character, e.g. `$0.003`)
-   - Optionally set a **Cap amount** (e.g. `$100`)
-
-2. Click **Add metered price** again and select the **Voice Creation** meter
-   - Set the **Amount per unit** (price per voice generation, e.g. `$0.25`)
-   - Optionally set a **Cap amount** (e.g. `$100`)
-
-With only metered prices, the subscription starts at **$0/month** and scales with usage. If you want a baseline subscription fee (e.g. $20/month), add a third price to the same product — select a **fixed price** instead of a metered price. This requires no code changes since fixed prices are handled entirely by Polar.
-
-Ensure **Allow multiple subscriptions** is turned **off** under **Settings > Billing** (this is the Polar default).
-
-Copy the product ID into `POLAR_PRODUCT_ID`. The meter filter names and aggregation property must match the `POLAR_METER_*` env variables.
-
-### 4. Set up the database
+### 3. Set up the database
 
 ```bash
 npx prisma migrate deploy
 ```
 
-### 5. Deploy the TTS engine
+### 4. Deploy the TTS engine
 
 The included `chatterbox_tts.py` is adapted from [Modal's official Chatterbox TTS example](https://cwa.run/modal-tts), modified to read voice reference audio directly from your R2 bucket instead of a Modal Volume.
 
@@ -162,7 +131,7 @@ Once deployed, generate the type-safe Chatterbox client from the OpenAPI spec:
 npm run sync-api
 ```
 
-### 6. Seed voices
+### 5. Seed voices
 
 ```bash
 npx prisma db seed
@@ -170,7 +139,7 @@ npx prisma db seed
 
 Seeds 20 built-in voices to the database and R2. The system voice WAV files are included in the repository and originate from [Modal's voice sample pack](https://modal-cdn.com/blog/audio/chatterbox-tts-voices.zip).
 
-### 7. Run
+### 6. Run
 
 ```bash
 npm run dev
@@ -186,7 +155,6 @@ Resonance is designed to be self-hosted. You'll need:
 2. **Cloudflare R2**  - For audio storage (S3-compatible, generous free tier)
 3. **Modal**  - For serverless GPU inference (pay-per-second billing)
 4. **Clerk**  - For authentication and multi-tenancy
-5. **Polar**  - For metered billing (use sandbox mode with card `4242 4242 4242 4242` for testing)
 
 Deploy the Next.js app to any Node.js host (Railway, Docker, etc.).
 
@@ -203,10 +171,9 @@ src/
 ├── features/
 │   ├── dashboard/              # Home page, quick actions
 │   ├── text-to-speech/         # TTS form, audio player, settings, history
-│   ├── voices/                 # Voice library, creation, recording
-│   └── billing/                # Usage display, checkout
+│   └── voices/                 # Voice library, creation, recording
 ├── hooks/                      # App-wide hooks
-├── lib/                        # Core: db, r2, polar, env, chatterbox client
+├── lib/                        # Core: db, r2, env, chatterbox client
 ├── trpc/                       # tRPC routers, client, server helpers
 ├── generated/                  # Prisma client
 └── types/                      # Generated API types

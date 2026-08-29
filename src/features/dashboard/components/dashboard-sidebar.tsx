@@ -33,7 +33,6 @@ import {
   Headphones,
 } from "lucide-react";
 import Link from "next/link";
-import { UsageContainer } from "@/features/billing/components/usage-container";
 import { VoiceCreateDialog } from "@/features/voices/components/voice-create-dialog";
 import { useState } from "react";
 
@@ -197,7 +196,6 @@ export function DashboardSidebar() {
       </SidebarContent>
       <div className="border-b border-dashed border-border" />
       <SidebarFooter className="gap-3 py-3">
-        <UsageContainer />
         <SidebarMenu>
           <SidebarMenuItem>
             <UserButton

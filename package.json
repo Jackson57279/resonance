@@ -18,7 +18,6 @@
     "@dicebear/collection": "^9.3.2",
     "@dicebear/core": "^9.3.2",
     "@hookform/resolvers": "^5.2.2",
-    "@polar-sh/sdk": "^0.45.0",
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "@sentry/nextjs": "^10.40.0",
