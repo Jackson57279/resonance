@@ -66,7 +66,7 @@ import {
 import { mediaFilesToWav } from "@/features/voices/lib/media-to-wav";
 import { VoiceRecorder } from "./voice-recorder";
 
-const MAX_TRAINING_SAMPLES = 3;
+const MAX_TRAINING_SAMPLES = 5;
 const MAX_SAMPLE_SIZE_BYTES = 50 * 1024 * 1024;
 
 const LANGUAGE_OPTIONS = locales.all

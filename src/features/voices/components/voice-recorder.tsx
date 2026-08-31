@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAudioPlayback } from "@/hooks/use-audio-playback";
 import { useAudioRecorder } from "@/features/voices/hooks/use-audio-recorder";
 
-const MAX_TRAINING_SAMPLES = 3;
+const MAX_TRAINING_SAMPLES = 5;
 
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600);
