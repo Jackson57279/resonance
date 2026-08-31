@@ -1,0 +1,21 @@
+src/features/voices/components/voice-recorder.tsx
+  s_ce6fb657784c19::t_3c2ab122a9be51 16
+src/features/voices/components/voice-create-form.tsx
+  s_ce6fb657784c19::t_c97a07a22bbc6c 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b9812e1eb0b6073490647686cd9af064277938f1",
+  "prompts": {},
+  "sessions": {
+    "s_ce6fb657784c19": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c48dd7b3-c31b-4752-94b7-ecfb3e6f569c",
+        "model": "grok-4.6"
+      },
+      "human_author": "Jackson57279 <otdoges@proton.me>"
+    }
+  }
+}
