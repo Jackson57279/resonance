@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Mic,
   Square,
@@ -12,6 +13,7 @@ import { cn, formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAudioPlayback } from "@/hooks/use-audio-playback";
 import { useAudioRecorder } from "@/features/voices/hooks/use-audio-recorder";
+import { RecordingScriptPanel } from "./recording-script-panel";
 
 const MAX_TRAINING_SAMPLES = 5;
 
@@ -34,6 +36,7 @@ export function VoiceRecorder({
   const lastFile = files[files.length - 1] ?? null;
   const { isPlaying, togglePlay } = useAudioPlayback(lastFile);
   const canAddMore = files.length < MAX_TRAINING_SAMPLES;
+  const [scriptIndex, setScriptIndex] = useState(0);
 
   const {
     isRecording,
@@ -56,11 +59,13 @@ export function VoiceRecorder({
         },
       );
       onFilesChange([...files, recordedFile].slice(0, MAX_TRAINING_SAMPLES));
+      setScriptIndex((index) => index + 1);
     });
   };
 
   const handleReRecord = () => {
     onFilesChange([]);
+    setScriptIndex(0);
     resetRecording();
   };
 
@@ -131,6 +136,12 @@ export function VoiceRecorder({
           </div>
         ))}
         {canAddMore && (
+          <RecordingScriptPanel
+            index={scriptIndex}
+            onIndexChange={setScriptIndex}
+          />
+        )}
+        {canAddMore && (
           <Button
             type="button"
             variant="outline"
@@ -158,7 +169,12 @@ export function VoiceRecorder({
 
   if (isRecording) {
     return (
-      <div className="flex flex-col overflow-hidden rounded-2xl border">
+      <div className="flex flex-col gap-3">
+       <RecordingScriptPanel
+         index={scriptIndex}
+         onIndexChange={setScriptIndex}
+       />
+       <div className="flex flex-col overflow-hidden rounded-2xl border">
          <div ref={containerRef} className="w-full" />
          <div className="flex items-center justify-between border-t p-4">
             <p className="text-[28px] font-semibold leading-[1.2] tracking-tight">
@@ -173,17 +189,20 @@ export function VoiceRecorder({
               Stop
             </Button>
          </div>
+       </div>
       </div>
     );
   }
 
   return (
-    <div
+    <div className="flex flex-col gap-3">
+     <RecordingScriptPanel index={scriptIndex} onIndexChange={setScriptIndex} />
+     <div
       className={cn(
         "flex cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border px-6 py-10",
         isInvalid && "border-destructive",
       )}
-    >
+     >
       <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
         <Mic className="size-5 text-muted-foreground" />
       </div>
@@ -205,6 +224,7 @@ export function VoiceRecorder({
         <Mic className="size-3.5" />
         Record
       </Button>
+     </div>
     </div>
   );
 }
