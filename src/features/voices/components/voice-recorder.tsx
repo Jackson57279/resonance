@@ -13,15 +13,56 @@ import { cn, formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAudioPlayback } from "@/hooks/use-audio-playback";
 import { useAudioRecorder } from "@/features/voices/hooks/use-audio-recorder";
+import { MAX_TRAINING_SAMPLES } from "@/features/voices/data/training";
 import { RecordingScriptPanel } from "./recording-script-panel";
-
-const MAX_TRAINING_SAMPLES = 5;
 
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function RecordedClipRow({
+  file,
+  onRemove,
+}: {
+  file: File;
+  onRemove: () => void;
+}) {
+  const { isPlaying, togglePlay } = useAudioPlayback(file);
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border p-4">
+      <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+        <FileAudio className="size-5 text-muted-foreground" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{file.name}</p>
+        <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+      </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        onClick={togglePlay}
+        title={isPlaying ? "Pause" : "Play"}
+      >
+        {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        onClick={onRemove}
+        title="Remove"
+      >
+        <X className="size-4" />
+      </Button>
+    </div>
+  );
 }
 
 export function VoiceRecorder({
@@ -33,15 +74,12 @@ export function VoiceRecorder({
   onFilesChange: (files: File[]) => void;
   isInvalid?: boolean;
 }) {
-  const lastFile = files[files.length - 1] ?? null;
-  const { isPlaying, togglePlay } = useAudioPlayback(lastFile);
   const canAddMore = files.length < MAX_TRAINING_SAMPLES;
   const [scriptIndex, setScriptIndex] = useState(0);
 
   const {
     isRecording,
     elapsedTime,
-    audioBlob,
     containerRef,
     error,
     startRecording,
@@ -58,8 +96,9 @@ export function VoiceRecorder({
           type: "audio/wav",
         },
       );
-      onFilesChange([...files, recordedFile].slice(0, MAX_TRAINING_SAMPLES));
-      setScriptIndex((index) => index + 1);
+      const next = [...files, recordedFile].slice(0, MAX_TRAINING_SAMPLES);
+      onFilesChange(next);
+      setScriptIndex(next.length);
     });
   };
 
@@ -73,12 +112,7 @@ export function VoiceRecorder({
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-destructive/50 bg-destructive/5 px-6 py-10">
         <p className="text-center text-sm text-destructive">{error}</p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={resetRecording}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={resetRecording}>
           Try again
         </Button>
       </div>
@@ -89,51 +123,15 @@ export function VoiceRecorder({
     return (
       <div className="flex flex-col gap-3">
         {files.map((file, index) => (
-          <div
+          <RecordedClipRow
             key={`${file.name}-${file.size}-${index}`}
-            className="flex items-center gap-3 rounded-xl border p-4"
-          >
-            <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
-              <FileAudio className="size-5 text-muted-foreground" />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{file.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatFileSize(file.size)}
-                {index === files.length - 1 && audioBlob && elapsedTime > 0 && (
-                  <>&nbsp;&middot;&nbsp;{formatTime(elapsedTime)}</>
-                )}
-              </p>
-            </div>
-
-            {index === files.length - 1 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={togglePlay}
-                title={isPlaying ? "Pause" : "Play"}
-              >
-                {isPlaying ? (
-                  <Pause className="size-4" />
-                ) : (
-                  <Play className="size-4" />
-                )}
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() =>
-                onFilesChange(files.filter((_, i) => i !== index))
-              }
-              title="Remove"
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
+            file={file}
+            onRemove={() => {
+              const next = files.filter((_, i) => i !== index);
+              onFilesChange(next);
+              setScriptIndex(next.length);
+            }}
+          />
         ))}
         {canAddMore && (
           <RecordingScriptPanel
@@ -170,61 +168,52 @@ export function VoiceRecorder({
   if (isRecording) {
     return (
       <div className="flex flex-col gap-3">
-       <RecordingScriptPanel
-         index={scriptIndex}
-         onIndexChange={setScriptIndex}
-       />
-       <div className="flex flex-col overflow-hidden rounded-2xl border">
-         <div ref={containerRef} className="w-full" />
-         <div className="flex items-center justify-between border-t p-4">
+        <RecordingScriptPanel
+          index={scriptIndex}
+          onIndexChange={setScriptIndex}
+        />
+        <div className="flex flex-col overflow-hidden rounded-2xl border">
+          <div ref={containerRef} className="w-full" />
+          <div className="flex items-center justify-between border-t p-4">
             <p className="text-[28px] font-semibold leading-[1.2] tracking-tight">
               {formatTime(elapsedTime)}
             </p>
-            <Button 
-              type="button" 
-              variant="destructive" 
-              onClick={handleStop}
-            >
+            <Button type="button" variant="destructive" onClick={handleStop}>
               <Square className="size-3" />
               Stop
             </Button>
-         </div>
-       </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-3">
-     <RecordingScriptPanel index={scriptIndex} onIndexChange={setScriptIndex} />
-     <div
-      className={cn(
-        "flex cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border px-6 py-10",
-        isInvalid && "border-destructive",
-      )}
-     >
-      <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
-        <Mic className="size-5 text-muted-foreground" />
-      </div>
-
-      <div className="flex flex-col items-center gap-1.5">
-        <p className="text-base font-semibold tracking-tight">
-          Record your voice
-        </p>
-        <p className="text-center text-sm text-muted-foreground">
-          Record up to {MAX_TRAINING_SAMPLES} clips for training
-        </p>
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={startRecording}
+      <RecordingScriptPanel index={scriptIndex} onIndexChange={setScriptIndex} />
+      <div
+        className={cn(
+          "flex cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border px-6 py-10",
+          isInvalid && "border-destructive",
+        )}
       >
-        <Mic className="size-3.5" />
-        Record
-      </Button>
-     </div>
+        <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
+          <Mic className="size-5 text-muted-foreground" />
+        </div>
+
+        <div className="flex flex-col items-center gap-1.5">
+          <p className="text-base font-semibold tracking-tight">
+            Record your voice
+          </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Record up to {MAX_TRAINING_SAMPLES} clips. Phone voice memos work too.
+          </p>
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={startRecording}>
+          <Mic className="size-3.5" />
+          Record
+        </Button>
+      </div>
     </div>
   );
 }

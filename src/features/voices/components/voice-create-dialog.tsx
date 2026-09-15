@@ -1,5 +1,8 @@
 "use client";
 
+import { useCallback } from "react";
+import { toast } from "sonner";
+
 import {
   Dialog,
   DialogContent,
@@ -19,10 +22,9 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { VoiceCreateForm } from "./voice-create-form";
 import { Button } from "@/components/ui/button";
-import { useCallback } from "react";
-import { toast } from "sonner";
+import { MAX_TRAINING_SAMPLES } from "@/features/voices/data/training";
+import { VoiceCreateForm } from "./voice-create-form";
 
 interface VoiceCreateDialogProps {
   children?: React.ReactNode;
@@ -49,8 +51,9 @@ export function VoiceCreateDialog({
           <DrawerHeader>
             <DrawerTitle>Create custom voice</DrawerTitle>
             <DrawerDescription>
-              Upload up to 3 audio or video clips, or record a sample, to add a
-              new voice to your library.
+              Upload or record up to {MAX_TRAINING_SAMPLES} short clips. Talk
+              like yourself in a quiet room. Ten real takes beat one fake
+              narrator voice.
             </DrawerDescription>
           </DrawerHeader>
           <VoiceCreateForm
@@ -77,8 +80,9 @@ export function VoiceCreateDialog({
         <DialogHeader className="text-left">
           <DialogTitle>Create custom voice</DialogTitle>
           <DialogDescription>
-            Upload up to 3 audio or video clips, or record a sample, to add a
-            new voice to your library.
+            Upload or record up to {MAX_TRAINING_SAMPLES} short clips. Talk like
+            yourself in a quiet room. Ten real takes beat one fake narrator
+            voice.
           </DialogDescription>
         </DialogHeader>
         <VoiceCreateForm onError={handleError} />

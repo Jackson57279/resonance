@@ -1,0 +1,6 @@
+export const MAX_TRAINING_SAMPLES = 10;
+export const MAX_SAMPLE_SIZE_BYTES = 50 * 1024 * 1024;
+export const TARGET_SAMPLE_RATE = 44100;
+export const CONDITIONING_SLICE_SECONDS = 1.6;
+export const CONDITIONING_GAP_SECONDS = 0.18;
+export const MAX_REFERENCE_SECONDS = 40;

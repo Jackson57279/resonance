@@ -1,11 +1,24 @@
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+"use client";
+
+import { ChevronLeft, ChevronRight, Copy, Quote } from "lucide-react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   RECORDING_SCRIPTS,
+  formatAllRecordingScripts,
   getRecordingScript,
 } from "@/features/voices/data/recording-scripts";
+
+async function copyText(label: string, value: string) {
+  try {
+    await navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  } catch {
+    toast.error("Could not copy. Select the text and copy it yourself.");
+  }
+}
 
 export function RecordingScriptPanel({
   index,
@@ -39,6 +52,17 @@ export function RecordingScriptPanel({
           type="button"
           variant="ghost"
           size="icon-sm"
+          onClick={() =>
+            void copyText("Script", `${script.title}\n${script.text}`)
+          }
+          title="Copy this script"
+        >
+          <Copy className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onIndexChange(index - 1)}
           title="Previous script"
         >
@@ -57,7 +81,18 @@ export function RecordingScriptPanel({
 
       <p className="text-sm leading-relaxed">{script.text}</p>
 
-      <p className="text-xs text-muted-foreground">{script.hint}</p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs text-muted-foreground">{script.hint}</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={() => void copyText("All 10 scripts", formatAllRecordingScripts())}
+        >
+          Copy all 10
+        </Button>
+      </div>
     </div>
   );
 }
