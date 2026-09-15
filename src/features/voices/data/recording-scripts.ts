@@ -15,7 +15,7 @@ export const RECORDING_SCRIPTS: RecordingScript[] = [
     id: "plain-me",
     title: "Plain you",
     hint: "Talk like you actually talk. Do not put on a presenter voice.",
-    text: "Hey, I'm Jackson Wheeler. I live in Kansas, I go to school, and this is just my normal voice. Nothing fancy. If I speed up or stumble a little, that is still me. Leave it in.",
+    text: "Hey. This is just my normal voice. Nothing fancy. If I speed up or stumble a little, that is still me. Leave it in.",
   },
   {
     id: "everyday",
@@ -60,16 +60,16 @@ export const RECORDING_SCRIPTS: RecordingScript[] = [
     text: "There is a stretch in the middle of learning something where you know enough to hear your mistakes but not enough to fix them. Most people quit there. The people who do not just keep showing up until it starts working again.",
   },
   {
-    id: "names",
-    title: "Names",
-    hint: "Say the names clean, then keep talking.",
-    text: "Jackson Wheeler. Wichita. Newton. Riley. French class. Homework due Friday. Jackson. Wheeler. Kansas. Say my name like I say it, not like a GPS.",
+    id: "places",
+    title: "Places",
+    hint: "Say the words clean, then keep talking.",
+    text: "Monday morning. The kitchen light is too bright. I left my keys on the counter again. Backpack. Jacket. Front door. Library closes at nine. That is all I needed to say.",
   },
   {
     id: "french-letters",
     title: "French letters",
     hint: "Your voice, not a French accent. These are the letter names.",
-    text: "Ah. Bay. Say. Day. Euh. Eff. Zhay. Ash. Ee. Zhee. Kah. Ell. Em. Enn. Oh. Pay. Ku. Air. Ess. Tay. Oo. Vay. Double vay. Eeks. Ee grek. Zed. Ça s'écrit. Zhee. Ah. Say. Kah. Ess. Oh. Enn. Double vay. Ash. Euh. Euh. Ell. Euh. Air.",
+    text: "Ah. Bay. Say. Day. Euh. Eff. Zhay. Ash. Ee. Zhee. Kah. Ell. Em. Enn. Oh. Pay. Ku. Air. Ess. Tay. Oo. Vay. Double vay. Eeks. Ee grek. Zed. Ça s'écrit. Bé. Oh. Enn. Zhee. Oo. Oh. Air.",
   },
 ];
 
