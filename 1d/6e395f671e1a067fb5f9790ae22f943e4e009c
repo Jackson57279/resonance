@@ -1,0 +1,21 @@
+src/features/voices/data/recording-scripts.ts
+  s_a5a92f40d08a74::t_e64de324f20573 72
+  s_a5a92f40d08a74::t_032772a983658b 18
+  s_a5a92f40d08a74::t_d2e3d815e2db72 63-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1d6e395f671e1a067fb5f9790ae22f943e4e009c",
+  "prompts": {},
+  "sessions": {
+    "s_a5a92f40d08a74": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a1d54549-99bd-4806-ab89-b453076b5b18",
+        "model": "grok-4.6"
+      },
+      "human_author": "Jackson57279 <otdoges@proton.me>"
+    }
+  }
+}
